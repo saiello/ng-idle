@@ -1,0 +1,67 @@
+<html ng-app="demo">
+  <head>
+    <title title>NgIdle Sample</title>
+    <script src="../node_modules/angular/angular.js"></script>
+    <script src="../angular-idle.js"></script>
+    <script type="text/javascript">
+      var app = angular.module('demo', ['ngIdle']);
+     
+      var urlParams = new URLSearchParams(window.location.search);
+
+      // sample/keepalive.html?seconds=10
+      // sample/keepalive.html?seconds=15767992
+
+      var seconds = urlParams.get('seconds') || 5;
+ 
+      app
+      .controller('EventsCtrl', function($scope, $rootScope) {
+        $scope.seconds = seconds;
+	$scope.events = 0;
+        $scope.keepaliveResponse
+        console.log("EventsCtrl")
+        
+        $rootScope.$on('Keepalive', function() {
+          console.log('Keepalive received')
+          $scope.events = $scope.events + 1;
+        });
+        
+
+        $rootScope.$on('KeepaliveResponse', function() {
+          console.log('KeepaliveResponse received')
+          $scope.events = $scope.events + 1;
+        });
+      })
+      .config(function(IdleProvider, KeepaliveProvider) {
+        console.log("Configure KeepaliveProvider");
+        // KeepaliveProvider.http("https://postman-echo.com/get");
+        KeepaliveProvider.interval(seconds);
+      })
+      .run(function($rootScope, $log, Keepalive){
+        console.log("Start Keepalive");
+
+        Keepalive.start();
+        $log.debug('app started.');
+      })
+
+      /*
+      .run(function($interval){
+        console.log("Start Interval");
+
+        $interval(function(){
+          console.log('$interval >> function')
+        }, seconds * 1000);
+      });
+      */
+
+    </script>
+  </head>
+  <body ng-controller="EventsCtrl">
+    <div>
+      <h1>Keepalive events</h1>
+
+      Seconds: {{seconds}}
+      Events fired: {{events}}
+    
+    </div>
+  </body>
+</html>
